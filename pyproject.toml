@@ -1,0 +1,18 @@
+[project]
+name = "rag-knowledge-base"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "celery>=5.5.3",
+    "fastapi>=0.116.1",
+    "langchain>=0.3.27",
+    "langchain-google>=0.1.1",
+    "langchain-openai>=0.3.30",
+    "psycopg2>=2.9.10",
+    "psycopg2-binary>=2.9.10",
+    "pydantic>=2.11.7",
+    "pymongo>=4.14.0",
+    "pymysql>=1.1.1",
+    "redis>=6.4.0",
+]
