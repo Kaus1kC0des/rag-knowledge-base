@@ -20,7 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </h1>
         <div className="flex gap-2">
             {/* Add Dark mode toggle */}
-            {/* <ModeToggle /> */}
+            <ModeToggle />
             <SignedOut>
               <SignInButton />
               <SignUpButton>
