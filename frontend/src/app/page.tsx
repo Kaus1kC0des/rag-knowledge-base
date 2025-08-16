@@ -52,14 +52,14 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 font-sans">
+    <div className="min-h-screen font-sans">
       {/* Top Bar */}
 
       {/* Filter/Search and Create Chat Button */}
       <div className="max-w-5xl mx-auto px-4 py-6 flex items-center gap-4">
         <input
           type="text"
-          className="flex-1 border border-gray-300 dark:border-zinc-700 rounded-lg px-4 py-2 bg-white dark:bg-zinc-800 dark:text-gray-100 shadow-sm"
+          className="flex-1 border rounded-lg px-4 py-2  shadow-sm"
           placeholder="Search your notes or chats..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
@@ -75,7 +75,7 @@ export default function HomePage() {
       {/* Chat Cards Grid */}
       <main className="max-w-5xl mx-auto px-4 pb-24">
         {filteredChats.length === 0 ? (
-          <div className="text-gray-500 dark:text-gray-400 text-center mt-16">
+          <div className="text-center mt-16">
             No chats found.
           </div>
         ) : (
@@ -83,7 +83,7 @@ export default function HomePage() {
             {filteredChats.map((chat) => (
               <div
                 key={chat.id}
-                className={`bg-white dark:bg-zinc-800 rounded-xl shadow hover:shadow-lg transition cursor-pointer border border-transparent hover:border-blue-400 dark:hover:border-blue-500 p-5 flex flex-col justify-between min-h-[140px] ${
+                className={`rounded-xl shadow hover:shadow-lg transition cursor-pointer border border-white-400 hover:border-blue-400 p-5 flex flex-col justify-between min-h-[140px] ${
                   selectedChatId === chat.id
                     ? "border-blue-500 dark:border-blue-400"
                     : ""
@@ -91,14 +91,14 @@ export default function HomePage() {
                 onClick={() => setSelectedChatId(chat.id)}
               >
                 <div>
-                  <div className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
+                  <div className="font-semibold text-lg mb-2">
                     {chat.title}
                   </div>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm truncate">
+                  <div className="text-sm truncate">
                     {chat.lastMessage || "No messages yet."}
                   </div>
                 </div>
-                <div className="text-gray-400 dark:text-gray-400 text-xs mt-4 text-right">
+                <div className="text-xs mt-4 text-right">
                   {chat.updatedAt}
                 </div>
               </div>
