@@ -8,7 +8,7 @@ export function ModeToggle() {
   const { resolvedTheme,setTheme } = useTheme()
 
   return (
-    <div>
+    <div className="flex items-center justify-center">
       <input type="checkbox" id="theme-toggle" className="hidden" />
       <label
         htmlFor="theme-toggle"
