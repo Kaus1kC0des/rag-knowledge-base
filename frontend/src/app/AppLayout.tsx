@@ -1,13 +1,7 @@
 import React from "react";
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import {SignedIn, SignedOut, SignInButton, SignUpButton, UserButton,} from "@clerk/nextjs";
 
-import { ModeToggle } from "@/components/ThemeSwitch";
+import {ModeToggle} from "@/components/ThemeSwitch";
 
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
