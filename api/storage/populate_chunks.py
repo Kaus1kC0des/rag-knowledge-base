@@ -1,9 +1,6 @@
 import asyncio
 import os
 import sys
-import time
-
-from torch.onnx.symbolic_opset9 import addcmul
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
@@ -27,12 +24,25 @@ async def populate_chunks():
         ]
     )
 
-    all_source_docs = await SourceDocument.find_all().to_list()
-    for doc in all_source_docs:
-        await asyncio.gather(doc.fetch_all_links())
+    all_documents = await SourceDocument.find_all().to_list()
+    print(f"Found {len(all_documents)} documents in the database.")
 
-        print(f"Doc: {doc.subject.id}")
-
+    for document in all_documents:
+        document.subject = await document.subject.fetch()
+        document.unit = await document.unit.fetch()
+        processor = DocumentProcessor(document)
+        chunks = await processor.process_and_create_chunks(chunk_size=800, overlap=150)
+        print("Emedding Dimension:", len(chunks[0].vector_embedding))
+        if not chunks:
+            print(f"No chunks created for document ID {document.id}. Skipping insertion.")
+            continue
+        try:
+            await Chunk.insert_many(chunks)
+            document.processing_status = "completed"
+            await document.save()
+            print(f"Inserted {len(chunks)} chunks for document ID {document.id}.")
+        except Exception as e:
+            print(f"Error inserting chunks for document ID {document.id}: {e}")
 
 if __name__ == "__main__":
     asyncio.run(populate_chunks())

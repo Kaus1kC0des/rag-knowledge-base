@@ -10,7 +10,7 @@ class ChunkEmbedder:
     A dedicated class for creating vector embeddings from text.
     """
 
-    def __init__(self, model_name: str = "models/embedding-001"):
+    def __init__(self, model_name: str = "gemini-embedding-001"):
         """Initializes the VectorEmbedder with a specified embedding model."""
         self.model_name = model_name
         self.embedder = GoogleGenerativeAIEmbeddings(
@@ -47,7 +47,7 @@ class ChunkEmbedder:
 class QueryEmbedder():
     def __init__(self):
         self.model = GoogleGenerativeAIEmbeddings(
-            model=os.getenv("GOOGLE_EMBEDDING_MODEL", "models/embedding-001"),
+            model=os.getenv("GOOGLE_EMBEDDING_MODEL", "gemini-embedding-001"),
             task_type="RETRIEVAL_QUERY",
             google_api_key=os.getenv("GEMINI_API_KEY")
         )
