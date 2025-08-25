@@ -1,126 +1,117 @@
 "use client";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
+import { BookOpen, Calculator, Atom, Cpu, Lightbulb, ArrowLeft } from "lucide-react";
 
-
-type Chat = {
-  id: number;
-  title: string;
-  lastMessage: string;
-  updatedAt: string;
+type Subject = {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  units: string[];
 };
+
+const subjects: Subject[] = [
+  {
+    id: "mathematics",
+    name: "Mathematics",
+    description: "Calculus, Linear Algebra, Statistics",
+    icon: <Calculator className="w-8 h-8" />,
+    color: "blue",
+    units: ["Unit 1: Differential Calculus", "Unit 2: Integral Calculus", "Unit 3: Linear Algebra", "Unit 4: Probability", "Unit 5: Statistics"]
+  },
+  {
+    id: "physics",
+    name: "Physics",
+    description: "Mechanics, Thermodynamics, Electromagnetism",
+    icon: <Atom className="w-8 h-8" />,
+    color: "purple",
+    units: ["Unit 1: Classical Mechanics", "Unit 2: Thermodynamics", "Unit 3: Electromagnetism", "Unit 4: Optics", "Unit 5: Modern Physics"]
+  },
+  {
+    id: "computer-science",
+    name: "Computer Science",
+    description: "Algorithms, Data Structures, Programming",
+    icon: <Cpu className="w-8 h-8" />,
+    color: "green",
+    units: ["Unit 1: Programming Fundamentals", "Unit 2: Data Structures", "Unit 3: Algorithms", "Unit 4: Database Systems", "Unit 5: Software Engineering"]
+  },
+  {
+    id: "engineering",
+    name: "Engineering",
+    description: "Circuit Analysis, Control Systems, Signals",
+    icon: <Lightbulb className="w-8 h-8" />,
+    color: "orange",
+    units: ["Unit 1: Circuit Analysis", "Unit 2: Control Systems", "Unit 3: Signal Processing", "Unit 4: Power Systems", "Unit 5: Communication Systems"]
+  },
+  {
+    id: "general-studies",
+    name: "General Studies",
+    description: "Literature, History, Philosophy",
+    icon: <BookOpen className="w-8 h-8" />,
+    color: "indigo",
+    units: ["Unit 1: Literature", "Unit 2: History", "Unit 3: Philosophy", "Unit 4: Economics", "Unit 5: Political Science"]
+  }
+];
 
 export default function HomePage() {
   const router = useRouter();
-  const [chats, setChats] = useState<Chat[]>([
-    {
-      id: 1,
-      title: "Personal Notes",
-      lastMessage: "Remember to buy milk.",
-      updatedAt: "2025-08-14 10:30",
-    },
-    {
-      id: 2,
-      title: "Work Ideas",
-      lastMessage: "Discuss Q3 roadmap.",
-      updatedAt: "2025-08-13 16:20",
-    },
-    {
-      id: 3,
-      title: "LLM Experiments",
-      lastMessage: "Try new prompt for summarization.",
-      updatedAt: "2025-08-12 09:10",
-    },
-  ]);
-  const [filter, setFilter] = useState("");
-  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
 
-  const filteredChats = chats.filter(
-    (chat) =>
-      chat.title.toLowerCase().includes(filter.toLowerCase()) ||
-      chat.lastMessage.toLowerCase().includes(filter.toLowerCase())
-  );
-
-  const handleCreateChat = () => {
-    const newId = chats.length ? chats[chats.length - 1].id + 1 : 1;
-    const newChat: Chat = {
-      id: newId,
-      title: `New Chat ${newId}`,
-      lastMessage: "",
-      updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
-    };
-    setChats([newChat, ...chats]);
-    // Navigate to the new chat
-    router.push(`/chat/${newId}`);
-  };
-
-  const handleChatClick = (chatId: number) => {
-    setSelectedChatId(chatId);
-    router.push(`/chat/${chatId}`);
+  const handleSubjectClick = (subject: Subject) => {
+    // Navigate to advanced chat with subject context
+    router.push(`/chat/advanced?subject=${subject.id}&name=${encodeURIComponent(subject.name)}`);
   };
 
   return (
-    <div className="min-h-screen font-sans">
-      {/* Filter/Search and Create Chat Button */}
-      <div className="max-w-5xl mx-auto px-4 py-6 flex items-center gap-4">
-        <input
-          type="text"
-          className="flex-1 border rounded-lg px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          placeholder="Search your notes or chats..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        />
-        <button
-          onClick={() => router.push("/chat/advanced")}
-          className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 shadow transition"
-          title="Advanced Chat"
-        >
-          🚀 Advanced Chat
-        </button>
-        <button
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 shadow transition"
-          onClick={handleCreateChat}
-          title="Create Chat"
-        >
-          + Create Chat
-        </button>
-      </div>
-      
-      {/* Chat Cards Grid */}
-      <main className="max-w-5xl mx-auto px-4 pb-24">
-        {filteredChats.length === 0 ? (
-          <div className="text-center mt-16">
-            <div className="text-gray-500 dark:text-gray-400 text-lg">No chats found.</div>
-            <p className="text-gray-400 dark:text-gray-500 mt-2">Create a new chat to get started!</p>
+    <div className="min-h-screen">
+      {/* Header Section */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex items-center mb-8">
+          <button
+            onClick={() => router.push('/')}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors mr-4"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="text-center flex-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              College Study Assistant
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 text-lg">
+              Get AI-powered help with your subjects. Select a subject to start learning!
+            </p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {filteredChats.map((chat) => (
-              <div
-                key={chat.id}
-                className={`rounded-xl shadow hover:shadow-lg transition cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-blue-400 p-5 flex flex-col justify-between min-h-[140px] bg-white dark:bg-gray-800 ${
-                  selectedChatId === chat.id
-                    ? "border-blue-500 dark:border-blue-400"
-                    : ""
-                }`}
-                onClick={() => handleChatClick(chat.id)}
-              >
-                <div>
-                  <div className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">
-                    {chat.title}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                    {chat.lastMessage || "No messages yet."}
-                  </div>
+        </div>
+
+        {/* Subjects Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          {subjects.map((subject) => (
+            <div
+              key={subject.id}
+              onClick={() => handleSubjectClick(subject)}
+              className="cursor-pointer rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 transition-all duration-200 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600"
+            >
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="p-3 rounded-full bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                  {subject.icon}
                 </div>
-                <div className="text-xs mt-4 text-right text-gray-500 dark:text-gray-400">
-                  {chat.updatedAt}
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
+                    {subject.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {subject.description}
+                  </p>
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {subject.units.length} Units Available
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </main>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
