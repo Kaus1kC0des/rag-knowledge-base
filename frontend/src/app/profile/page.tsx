@@ -1,6 +1,8 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { UserProfile } from '@/components/user-profile'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 export default async function ProfilePage() {
   // Get user authentication status
@@ -17,7 +19,15 @@ export default async function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-center mb-8">User Profile</h1>
+        <div className="flex items-center mb-8">
+          <Link
+            href="/"
+            className="p-2 hover:bg-gray-200 rounded-full transition-colors mr-4"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <h1 className="text-3xl font-bold flex-1 text-center">User Profile</h1>
+        </div>
         
         {/* Client-side user profile component */}
         <div className="mb-8">
