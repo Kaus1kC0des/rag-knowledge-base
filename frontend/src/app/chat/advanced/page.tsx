@@ -140,9 +140,8 @@ export default function AdvancedChatPage() {
         message,
         currentChatId,
         { subject, unit },
-        token ? { Authorization: {"Bearer": token} } : undefined
+        token ? { Authorization: `Bearer ${token}` } : undefined
       );
-
       return response;
     } catch (error) {
       throw error;

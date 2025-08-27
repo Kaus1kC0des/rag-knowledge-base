@@ -1,0 +1,94 @@
+{
+    "id": "user_31n3jJa68jYg5zQ4A9eJME11uod",
+    "object": "user",
+    "external_id": null,
+    "primary_email_address_id": "idn_31n3ie0bY93MxM7bPLWyZuAbQTf",
+    "primary_phone_number_id": null,
+    "primary_web3_wallet_id": null,
+    "username": null,
+    "first_name": "Kausik",
+    "last_name": "Devanathan",
+    "has_image": true,
+    "public_metadata": {},
+    "email_addresses": [
+        {
+            "object": "email_address",
+            "email_address": "kaus1kc0des@gmail.com",
+            "reserved": false,
+            "verification": {
+                "status": "verified",
+                "strategy": "from_oauth_google",
+                "expire_at": null,
+                "attempts": null,
+                "object": "verification_from_oauth"
+            },
+            "linked_to": [
+                {
+                    "type": "oauth_google",
+                    "id": "idn_31n3ift6HG9zIyJtA7lBdKY4npX"
+                }
+            ],
+            "created_at": 1756146137397,
+            "updated_at": 1756146142952,
+            "id": "idn_31n3ie0bY93MxM7bPLWyZuAbQTf",
+            "matches_sso_connection": false
+        }
+    ],
+    "phone_numbers": [],
+    "web3_wallets": [],
+    "passkeys": [],
+    "password_enabled": false,
+    "two_factor_enabled": false,
+    "totp_enabled": false,
+    "backup_code_enabled": false,
+    "mfa_enabled_at": null,
+    "mfa_disabled_at": null,
+    "external_accounts": [
+        {
+            "object": "google_account",
+            "id": "idn_31n3ift6HG9zIyJtA7lBdKY4npX",
+            "provider": "oauth_google",
+            "identification_id": "idn_31n3ift6HG9zIyJtA7lBdKY4npX",
+            "provider_user_id": "114040815817012292869",
+            "approved_scopes": "email https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid profile",
+            "email_address": "kaus1kc0des@gmail.com",
+            "first_name": "Kausik",
+            "last_name": "Devanathan",
+            "public_metadata": {},
+            "created_at": 1756146137391,
+            "updated_at": 1756146137391,
+            "verification": {
+                "status": "verified",
+                "strategy": "oauth_google",
+                "expire_at": 1756146710767,
+                "attempts": null,
+                "object": "verification_oauth"
+            },
+            "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocJaxBe_oKXajLUS9G3Kc5FFy1I-rroOuId0J9aUSyPhkw0oXQ=s1000-c",
+            "image_url": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NKYXhCZV9vS1hhakxVUzlHM0tjNUZGeTFJLXJyb091SWQwSjlhVVN5UGhrdzBvWFE9czEwMDAtYyIsInMiOiJhQ0gzOEk2VE9LTDVIQWZIUVlzb25wMStWZzdBbTY2V05XZVQzVjhqNnVBIn0",
+            "username": null,
+            "label": null,
+            "external_account_id": "eac_31n3ic1acOcJkL6IDiSkV1J8gQd",
+            "google_id": "114040815817012292869",
+            "given_name": "Kausik",
+            "family_name": "Devanathan",
+            "picture": "https://lh3.googleusercontent.com/a/ACg8ocJaxBe_oKXajLUS9G3Kc5FFy1I-rroOuId0J9aUSyPhkw0oXQ=s1000-c"
+        }
+    ],
+    "saml_accounts": [],
+    "last_sign_in_at": 1756146142956,
+    "banned": false,
+    "locked": false,
+    "lockout_expires_in_seconds": null,
+    "verification_attempts_remaining": 100,
+    "updated_at": 1756146142970,
+    "created_at": 1756146142943,
+    "delete_self_enabled": true,
+    "create_organization_enabled": true,
+    "last_active_at": 1756232550143,
+    "legal_accepted_at": null,
+    "profile_image_url": "https://images.clerk.dev/oauth_google/img_31n3jEThUoAx9LjDtasrRZCtmKS",
+    "image_url": "https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMW4zakVUaFVvQXg5TGpEdGFzclJaQ3RtS1MifQ",
+    "private_metadata": {},
+    "unsafe_metadata": {}
+}

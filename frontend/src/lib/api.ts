@@ -49,7 +49,7 @@ export const chatAPI = {
         message: string,
         chatId?: string,
         context?: { subject?: string; unit?: string },
-        headers?: Record<string, string>
+        headers?: object
     ): Promise<string> => {
         const response = await apiCall("/chat/message", {
             method: "POST",
