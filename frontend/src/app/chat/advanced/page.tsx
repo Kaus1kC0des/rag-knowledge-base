@@ -2,7 +2,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Menu, X, Trash2, Edit3, ChevronDown, BookOpen, Calculator, Atom, Cpu, Lightbulb, ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { dummyAPI } from "@/lib/api";
+import { dummyAPI, chatAPI } from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
 
 type Message = {
   id: string;
@@ -69,7 +70,8 @@ const subjects: Subject[] = [
 export default function AdvancedChatPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+  const { getToken } = useAuth();
+
   // Get subject and unit from URL params
   const urlSubject = searchParams.get('subject');
   const urlName = searchParams.get('name');
@@ -133,13 +135,14 @@ export default function AdvancedChatPage() {
   // Enhanced API call with subject and unit context
   const sendMessageWithContext = async (message: string, subject: string, unit: string): Promise<string> => {
     try {
-      // This is where you'll integrate with your backend
-      // For now, using dummy API with enhanced context
-      
-      // You can replace this with your actual API call:
-      // const response = await chatAPI.sendMessage(message, currentChatId, { subject, unit });
-      
-      const response = await dummyAPI.sendMessage(message, { subject, unit });
+      const token = await getToken({ template: "user-auth-token-template" });
+      const response = await chatAPI.sendMessage(
+        message,
+        currentChatId,
+        { subject, unit },
+        token ? { Authorization: {"Bearer": token} } : undefined
+      );
+
       return response;
     } catch (error) {
       throw error;
@@ -148,7 +151,6 @@ export default function AdvancedChatPage() {
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading || !currentChat) return;
-
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
       content: inputMessage,

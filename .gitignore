@@ -5,6 +5,7 @@ __pycache__/
 *.pyd
 .idea/
 .env
+.env.local
 .DS_Store/
 .vscode/
 api/data/
