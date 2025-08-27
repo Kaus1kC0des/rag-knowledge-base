@@ -90,25 +90,25 @@ export default function ChatPage({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] max-w-4xl mx-auto bg-black">
+    <div className="flex flex-col h-[calc(100vh-80px)] max-w-4xl mx-auto bg-chat">
       {/* Chat Header */}
-      <div className="border-b border-gray-800 p-4 bg-gray-900">
+      <div className="border-b border-default p-4 bg-header">
         <div className="flex items-center space-x-3">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-gray-800 rounded-full transition-colors text-gray-300"
+            className="p-2 hover-surface rounded-full transition-colors text-secondary"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-xl font-semibold text-gray-100">Chat {params.slug}</h1>
-            <p className="text-sm text-gray-400">AI-powered conversation</p>
+            <h1 className="text-xl font-semibold text-primary">Chat {params.slug}</h1>
+            <p className="text-sm text-secondary">AI-powered conversation</p>
           </div>
         </div>
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-chat">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -117,24 +117,24 @@ export default function ChatPage({
             }`}
           >
             {message.sender === "ai" && (
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
+              <div className="flex-shrink-0 w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                <Bot className="w-5 h-5 text-inverse" />
               </div>
             )}
             
             <div
               className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                 message.sender === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-100 shadow-sm border border-gray-700"
+                  ? "bg-accent text-inverse"
+                  : "bg-surface text-primary shadow-sm border border-default"
               }`}
             >
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               <p
                 className={`text-xs mt-1 ${
                   message.sender === "user"
-                    ? "text-blue-200"
-                    : "text-gray-400"
+                    ? "text-brand-weak"
+                    : "text-secondary"
                 }`}
               >
                 {formatTime(message.timestamp)}
@@ -142,8 +142,8 @@ export default function ChatPage({
             </div>
 
             {message.sender === "user" && (
-              <div className="flex-shrink-0 w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
+              <div className="flex-shrink-0 w-8 h-8 bg-success rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-inverse" />
               </div>
             )}
           </div>
@@ -152,14 +152,14 @@ export default function ChatPage({
         {/* Loading indicator */}
         {isLoading && (
           <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <Bot className="w-5 h-5 text-white" />
+            <div className="flex-shrink-0 w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+              <Bot className="w-5 h-5 text-inverse" />
             </div>
-            <div className="bg-gray-800 text-gray-100 px-4 py-2 rounded-lg shadow-sm border border-gray-700">
+            <div className="bg-surface text-primary px-4 py-2 rounded-lg shadow-sm border border-default">
               <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-loader-dot rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-loader-dot rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-loader-dot rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
             </div>
           </div>
@@ -169,26 +169,26 @@ export default function ChatPage({
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-800 p-4 bg-gray-900">
+      <div className="border-t border-default p-4 bg-header">
         <div className="flex space-x-2">
           <textarea
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message here..."
-            className="flex-1 resize-none border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white max-h-32"
+            className="flex-1 resize-none border border-default rounded-lg px-3 py-2 form-input max-h-32"
             rows={1}
             disabled={isLoading}
           />
           <button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg px-4 py-2 transition-colors flex items-center justify-center"
+            className="btn-primary rounded-lg px-4 py-2 transition-colors flex items-center justify-center"
           >
             <Send className="w-5 h-5" />
           </button>
         </div>
-        <div className="text-xs text-gray-400 mt-2">
+        <div className="text-xs text-secondary mt-2">
           Press Enter to send, Shift+Enter for new line
         </div>
       </div>

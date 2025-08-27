@@ -4,11 +4,11 @@ import { ArrowLeft } from 'lucide-react'
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-page">
       <div className="absolute top-4 left-4">
         <Link
           href="/"
-          className="p-2 hover:bg-gray-200 rounded-full transition-colors inline-flex items-center"
+          className="p-2 hover-surface rounded-full transition-colors inline-flex items-center"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>

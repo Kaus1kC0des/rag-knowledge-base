@@ -290,20 +290,20 @@ export default function AdvancedChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-80px)] bg-black">
+    <div className="flex h-[calc(100vh-80px)] bg-chat">
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden`}>
-        <div className="w-80 bg-gray-900 border-r border-gray-800 flex flex-col h-full">
+        <div className="w-80 bg-header border-r border-default flex flex-col h-full">
           {/* Subject Selector */}
-          <div className="p-4 border-b border-gray-800">
+          <div className="p-4 border-b border-default">
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-secondary mb-2">
                 Subject
               </label>
               <select
                 value={selectedSubject}
                 onChange={(e) => handleSubjectChange(e.target.value)}
-                className="w-full p-2 border border-gray-700 rounded-lg bg-gray-800 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-default rounded-lg form-input"
               >
                 {subjects.map((subject) => (
                   <option key={subject.id} value={subject.id}>
@@ -315,20 +315,20 @@ export default function AdvancedChatPage() {
 
             {/* Unit Dropdown */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-secondary mb-2">
                 Unit
               </label>
               <div className="relative">
                 <button
                   onClick={() => setUnitDropdownOpen(!unitDropdownOpen)}
-                  className="w-full p-2 border border-gray-700 rounded-lg bg-gray-800 text-gray-100 text-left flex items-center justify-between focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-default rounded-lg form-input text-left flex items-center justify-between"
                 >
                   <span className="truncate">{selectedUnit}</span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${unitDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {unitDropdownOpen && (
-                  <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-surface border border-default rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     {activeSubject.units.map((unit, index) => (
                       <button
                         key={index}
@@ -336,7 +336,7 @@ export default function AdvancedChatPage() {
                           setSelectedUnit(unit);
                           setUnitDropdownOpen(false);
                         }}
-                        className="w-full p-2 text-left hover:bg-gray-700 text-gray-100 border-b border-gray-700 last:border-b-0"
+                        className="w-full p-2 text-left hover-surface text-primary border-b border-default last:border-b-0"
                       >
                         {unit}
                       </button>
@@ -348,7 +348,7 @@ export default function AdvancedChatPage() {
 
             <button
               onClick={handleCreateChat}
-              className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 py-2 transition-colors"
+              className="w-full flex items-center justify-center space-x-2 btn-primary rounded-lg px-3 py-2 transition-colors"
             >
               <span>+ New Chat</span>
             </button>
@@ -368,8 +368,8 @@ export default function AdvancedChatPage() {
                     key={chat.id}
                     className={`group relative p-3 rounded-lg cursor-pointer transition-colors ${
                       currentChatId === chat.id
-                        ? "bg-blue-900/30 border border-blue-700"
-                        : "hover:bg-gray-800"
+                        ? "item-active border"
+                        : "hover-surface"
                     }`}
                     onClick={() => setCurrentChatId(chat.id)}
                   >
@@ -385,22 +385,22 @@ export default function AdvancedChatPage() {
                               handleEditChatTitle(chat.id, editingTitle);
                             }
                           }}
-                          className="flex-1 text-sm font-medium bg-gray-800 border border-blue-600 rounded px-2 py-1 focus:outline-none focus:border-blue-500 text-gray-100"
+                          className="flex-1 text-sm font-medium form-input rounded px-2 py-1"
                           autoFocus
                         />
                       ) : (
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-100 truncate">
+                          <p className="text-sm font-medium text-primary truncate">
                             {chat.title}
                           </p>
-                          <p className="text-xs text-gray-400 truncate">
+                          <p className="text-xs text-secondary truncate">
                             {chat.messages[chat.messages.length - 1]?.content || "No messages"}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-low">
                             {formatTime(chat.updatedAt)}
                           </p>
                           {chat.unit && (
-                            <p className="text-xs text-blue-600 dark:text-blue-400 truncate mt-1">
+                            <p className="text-xs text-brand-weak truncate mt-1">
                               {chat.unit}
                             </p>
                           )}
@@ -414,10 +414,10 @@ export default function AdvancedChatPage() {
                             setEditingChatId(chat.id);
                             setEditingTitle(chat.title);
                           }}
-                          className="p-1 hover:bg-gray-700 rounded transition-colors"
+                          className="p-1 hover-surface rounded transition-colors"
                           title="Edit title"
                         >
-                          <Edit3 className="w-3 h-3 text-gray-400" />
+                          <Edit3 className="w-3 h-3 text-secondary" />
                         </button>
                         {subjectChats.length > 1 && (
                           <button
@@ -425,10 +425,10 @@ export default function AdvancedChatPage() {
                               e.stopPropagation();
                               handleDeleteChat(chat.id);
                             }}
-                            className="p-1 hover:bg-red-900/20 rounded transition-colors"
+                            className="p-1 hover-danger rounded transition-colors"
                             title="Delete chat"
                           >
-                            <Trash2 className="w-3 h-3 text-red-400" />
+                            <Trash2 className="w-3 h-3 text-danger" />
                           </button>
                         )}
                       </div>
@@ -444,34 +444,34 @@ export default function AdvancedChatPage() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Chat Header */}
-        <div className="bg-gray-900 border-b border-gray-800 p-4">
+        <div className="bg-header border-b border-default p-4">
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-300"
+              className="p-2 hover-surface rounded-lg transition-colors text-secondary"
             >
               {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <button
               onClick={() => router.push('/chat')}
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-300"
+              className="p-2 hover-surface rounded-lg transition-colors text-secondary"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center space-x-2">
               {activeSubject.icon}
               <div>
-                <h1 className="text-xl font-semibold text-gray-100">
+                <h1 className="text-xl font-semibold text-primary">
                   {activeSubject.name}
                 </h1>
-                <p className="text-sm text-gray-400">{selectedUnit}</p>
+                <p className="text-sm text-secondary">{selectedUnit}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-chat">
           {currentChat?.messages.map((message) => (
             <div
               key={message.id}
@@ -480,24 +480,24 @@ export default function AdvancedChatPage() {
               }`}
             >
               {message.sender === "ai" && (
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-white" />
+                <div className="flex-shrink-0 w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                  <Bot className="w-5 h-5 text-inverse" />
                 </div>
               )}
               
               <div
                 className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                   message.sender === "user"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 text-gray-100 shadow-sm border border-gray-700"
+                    ? "bg-accent text-inverse"
+                    : "bg-surface text-primary shadow-sm border border-default"
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                 <p
                   className={`text-xs mt-1 ${
                     message.sender === "user"
-                      ? "text-blue-200"
-                      : "text-gray-400"
+                      ? "text-brand-weak"
+                      : "text-secondary"
                   }`}
                 >
                   {formatTime(message.timestamp)}
@@ -505,8 +505,8 @@ export default function AdvancedChatPage() {
               </div>
 
               {message.sender === "user" && (
-                <div className="flex-shrink-0 w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-white" />
+                <div className="flex-shrink-0 w-8 h-8 bg-success rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-inverse" />
                 </div>
               )}
             </div>
@@ -515,14 +515,14 @@ export default function AdvancedChatPage() {
           {/* Loading indicator */}
           {isLoading && (
             <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
+              <div className="flex-shrink-0 w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                <Bot className="w-5 h-5 text-inverse" />
               </div>
-              <div className="bg-gray-800 text-gray-100 px-4 py-2 rounded-lg shadow-sm border border-gray-700">
+              <div className="bg-surface text-primary px-4 py-2 rounded-lg shadow-sm border border-default">
                 <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 bg-loader-dot rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-loader-dot rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-loader-dot rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
               </div>
             </div>
@@ -532,9 +532,9 @@ export default function AdvancedChatPage() {
         </div>
 
         {/* Input Area */}
-        <div className="bg-gray-900 border-t border-gray-800 p-4">
+        <div className="bg-header border-t border-default p-4">
           <div className="mb-2">
-            <div className="flex items-center space-x-2 text-xs text-gray-400">
+            <div className="flex items-center space-x-2 text-xs text-secondary">
               <span>📚 {activeSubject.name}</span>
               <span>•</span>
               <span>📖 {selectedUnit}</span>
@@ -546,19 +546,19 @@ export default function AdvancedChatPage() {
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={`Ask me anything about ${activeSubject.name}...`}
-              className="flex-1 resize-none border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white max-h-32"
+              className="flex-1 resize-none border border-default rounded-lg px-3 py-2 form-input max-h-32"
               rows={1}
               disabled={isLoading}
             />
             <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isLoading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg px-4 py-2 transition-colors flex items-center justify-center"
+              className="btn-primary rounded-lg px-4 py-2 transition-colors flex items-center justify-center"
             >
               <Send className="w-5 h-5" />
             </button>
           </div>
-          <div className="text-xs text-gray-400 mt-2">
+          <div className="text-xs text-secondary mt-2">
             Press Enter to send, Shift+Enter for new line
           </div>
         </div>
