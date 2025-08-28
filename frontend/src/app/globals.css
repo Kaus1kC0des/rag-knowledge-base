@@ -1,1 +1,119 @@
 @import "tailwindcss";
+
+/* Theme variables */
+:root {
+  /* Light mode */
+  --color-app-bg: oklch(0.98 0 0); /* gray-50 */
+  --color-surface: oklch(1 0 0); /* white */
+  --color-surface-2: oklch(0.97 0 0); /* subtle surface */
+  --color-header: oklch( 0 0); /* gray-900 */
+  --color-chat-bg: oklch(1 0 0); /* black */
+
+  --color-text: oklch(0.2 0 0); /* near black */
+  --color-text-muted: oklch(0.6 0 0); /* gray-400/600 middle */
+  --color-text-low: oklch(0.7 0 0); /* gray-500 */
+
+  --color-border: oklch(0.88 0 0); /* gray-200 */
+  --color-border-strong: oklch(0.76 0 0); /* gray-300/400 */
+  --color-surface-hover: oklch(0.92 0 0); /* gray-100 */
+
+  --color-accent: oklch(0.62 0.18 264); /* blue-600 */
+  --color-accent-hover: oklch(0.56 0.2 264); /* blue-700 */
+  --color-accent-weak: oklch(0.56 0.2 264); /* blue-200-ish */
+
+  --color-success: oklch(0.64 0.17 148); /* green-600 */
+  --color-danger: oklch(0.71 0.25 29); /* red-500/400 */
+  --color-danger-bg: color-mix(in oklch, oklch(0.71 0.25 29) 20%, transparent);
+
+  --color-loader-dot: oklch(0.7 0 0); /* gray-500 */
+  --color-disabled-bg: oklch(0.55 0 0); /* gray-600 */
+}
+
+.dark {
+  --color-app-bg: oklch(0.14 0 0); /* near black */
+  --color-surface: oklch(0.28 0 0); /* gray-800 */
+  --color-surface-2: oklch(0.36 0 0); /* gray-700 */
+  --color-header: oklch(0.21 0 0); /* gray-900 */
+  --color-chat-bg: oklch(0 0 0); /* black */
+
+  --color-text: oklch(0.96 0 0); /* gray-100 */
+  --color-text-muted: oklch(0.74 0 0); /* gray-400 */
+  --color-text-low: oklch(0.66 0 0); /* gray-500 */
+
+  --color-border: oklch(0.36 0 0); /* gray-700/800 */
+  --color-border-strong: oklch(0.44 0 0); /* gray-600 */
+  --color-surface-hover: oklch(0.28 0 0); /* gray-800 */
+
+  --color-accent: oklch(0.62 0.18 264); /* blue-600 */
+  --color-accent-hover: oklch(0.56 0.2 264); /* blue-700 */
+  --color-accent-weak: oklch(0.78 0.08 235); /* blue-400 */
+
+  --color-success: oklch(0.64 0.17 148); /* green-600 */
+  --color-danger: oklch(0.71 0.25 29); /* red-500/400 */
+  --color-danger-bg: color-mix(in oklch, oklch(0.71 0.25 29) 20%, transparent);
+
+  --color-loader-dot: oklch(0.66 0 0); /* gray-500 */
+  --color-disabled-bg: oklch(0.4 0 0); /* gray-600 */
+}
+
+body {
+  background: var(--color-app-bg);
+  color: var(--color-text);
+}
+
+/* Reusable utility classes (color-focused) */
+.bg-page { background: var(--color-app-bg); }
+.bg-surface { background: var(--color-surface); }
+.bg-surface-muted { background: var(--color-surface-2); }
+.bg-header { background: var(--color-header); }
+.bg-chat { background: var(--color-chat-bg); }
+
+.text-primary { color: var(--color-text); }
+.text-secondary { color: var(--color-text-muted); }
+.text-low { color: var(--color-text-low); }
+.text-inverse { color: white; }
+.text-brand-weak { color: var(--color-accent-weak); }
+.text-danger { color: var(--color-danger); }
+
+.border-default { border-color: var(--color-border); }
+.border-strong { border-color: var(--color-border-strong); }
+
+.hover-surface:hover { background: var(--color-surface-hover); }
+.hover-danger:hover { background: var(--color-danger-bg); }
+
+.bg-accent { background: var(--color-accent); color: white; }
+.bg-accent:hover { background: var(--color-accent-hover); }
+.bg-success { background: var(--color-success); color: white; }
+
+.bg-loader-dot { background: var(--color-loader-dot); }
+
+/* Buttons */
+.btn-primary {
+  background: var(--color-accent);
+  color: white;
+}
+.btn-primary:hover {
+  background: var(--color-accent-hover);
+}
+.btn-primary:disabled {
+  background: var(--color-disabled-bg);
+  cursor: not-allowed;
+}
+
+/* Form inputs */
+.form-input {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.form-input:focus {
+  outline: 0;
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-accent) 40%, transparent);
+  border-color: var(--color-accent);
+}
+
+/* Active list item background using accent tint */
+.item-active {
+  background: color-mix(in oklch, var(--color-accent) 20%, transparent);
+  border-color: color-mix(in oklch, var(--color-accent) 60%, var(--color-border));
+}

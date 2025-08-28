@@ -64,21 +64,21 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-page">
       {/* Header Section */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center mb-8">
           <button
             onClick={() => router.push('/')}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors mr-4"
+            className="p-2 hover-surface rounded-full transition-colors mr-4"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="text-center flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <h1 className="text-3xl font-bold text-primary mb-2">
               College Study Assistant
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
+            <p className="text-secondary text-lg">
               Get AI-powered help with your subjects. Select a subject to start learning!
             </p>
           </div>
@@ -90,21 +90,21 @@ export default function HomePage() {
             <div
               key={subject.id}
               onClick={() => handleSubjectClick(subject)}
-              className="cursor-pointer rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 transition-all duration-200 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600"
+              className="cursor-pointer rounded-xl border border-default bg-surface p-6 transition-all duration-200 hover:shadow-lg hover:border-strong"
             >
               <div className="flex flex-col items-center text-center space-y-4">
-                <div className="p-3 rounded-full bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                <div className="p-3 rounded-full bg-surface-muted text-secondary">
                   {subject.icon}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
+                  <h3 className="font-semibold text-lg text-primary mb-2">
                     {subject.name}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-secondary">
                     {subject.description}
                   </p>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="text-xs text-low">
                   {subject.units.length} Units Available
                 </div>
               </div>
