@@ -10,3 +10,4 @@ __pycache__/
 .vscode/
 api/data/
 .DS_Store
+*.json
