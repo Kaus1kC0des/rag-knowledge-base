@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import List, Dict, Any
 
-from beanie import Document, Indexed, Link, PydanticObjectId
+from beanie import Document, Indexed, Link
 from pydantic import Field
 
 from .source_document import SourceDocument

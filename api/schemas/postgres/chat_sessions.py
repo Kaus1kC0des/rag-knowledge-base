@@ -5,7 +5,7 @@ from datetime import datetime
 
 class ChatSession(BASE):
     __tablename__ = "chat_sessions"
-    __table_args__ = ({"schema": "ragApp"})
+    __table_args__ = ({"schema": "ragapp"})
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     user_id = Column(String, nullable=False, index=True)
