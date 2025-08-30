@@ -4,28 +4,23 @@ from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from fastapi import HTTPException
+from typing import List, Dict, Any
 from sqlalchemy.exc import NoReferenceError
 import traceback
 
-def create_message(chat_session: ChatSession, chat_response: ChatResponseModel, db: Session) -> ChatMessage:
+def create_message(id: int, query: str, response: str, chunks: List[Dict[str, Any]], db: Session, user_metadata = None) -> ChatMessage:
     try:
-        id = chat_session.id
-        print(f"Recieved Session ID: {id}")
 
         new_message = ChatMessage(
             chat_id=id,
-            query=chat_response.query,
-            response=chat_response.response,
-            chunks=chat_response.sources,
-            user_metadata=chat_response.user_metadata
+            query=query,
+            response=response,
+            chunks=chunks,
+            user_metadata=user_metadata
         )
-        print(f"Creating new message: {new_message}")
         db.add(new_message)
-        print("Added new message to session")
         db.commit()
-        print("Committed new message to database")
         db.refresh(new_message)
-        print(f"Refreshed new message: {new_message}")
         return new_message
     except Exception as e:
         print(e)
