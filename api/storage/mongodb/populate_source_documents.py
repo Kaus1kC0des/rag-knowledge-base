@@ -6,8 +6,6 @@ import re
 from beanie import init_beanie
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from api.schemas.mongodb import Subject, Unit, SourceDocument
 from api.loaders.gcs_loader import get_all_files_from_bucket
 

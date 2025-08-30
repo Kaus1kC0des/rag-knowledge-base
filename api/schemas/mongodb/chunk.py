@@ -16,8 +16,8 @@ class Chunk(Document):
 
     document: Link[SourceDocument]
 
-    subject_id: Indexed(PydanticObjectId)
-    unit_id: Indexed(PydanticObjectId)
+    subject_id: str = Indexed(str)
+    unit_id: str = Indexed(str)
 
     content: str = Field(
         ...,
