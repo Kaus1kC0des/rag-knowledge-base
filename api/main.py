@@ -1,29 +1,103 @@
-"""
-FastAPI application for the RAG Knowledge Base API.
-Integrates the enhanced document processor for comprehensive file support.
-"""
-
+from api.models import UserModel, UserModelOutput, UserEditModel
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import tempfile
 import os
 from typing import List, Dict, Any
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from contextlib import asynccontextmanager
+from api.loaders.data_retriever import get_vector_search_engine
+from api.routes.chat_routes import router as chat_router
 
-from api.processors import DocumentProcessor
-from api.processors.chunkers import chunk_documents_by_character
-from langchain_core.documents import Document
+# Global retriever instance
+_retriever = None
 
+# Lifespan context manager for modern FastAPI
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle application startup and shutdown events."""
+    global _retriever
+    try:
+        # Startup: Initialize Beanie models first
+        from motor.motor_asyncio import AsyncIOMotorClient
+        from beanie import init_beanie
+        from api.schemas.mongodb.chunk import Chunk
+        from api.schemas.mongodb.subject import Subject
+        from api.schemas.mongodb.unit import Unit
+        from api.schemas.mongodb.source_document import SourceDocument
+        
+        mongo_url = os.getenv("MONGO_URL")
+        db_name = os.getenv("MONGO_DB")
+        
+        # Initialize Beanie with async motor client
+        mongo_client = AsyncIOMotorClient(mongo_url)
+        mongo_db = mongo_client[db_name]
+        
+        await init_beanie(
+            database=mongo_db,
+            document_models=[Chunk, Subject, Unit, SourceDocument]
+        )
+        print("✅ Beanie models initialized")
+        
+        # Then initialize data retriever
+        from api.loaders.data_retriever import MongoVectorSearchEngine
+        _retriever = MongoVectorSearchEngine()
+        await _retriever.initialize()
+        print("🚀 Data retriever initialized on startup")
+        
+        # Initialize AI response generator
+        from api.models.ai_response_generator import GeminiResponseGenerator
+        _ai_generator = GeminiResponseGenerator()
+        await _ai_generator.initialize()
+        print("🤖 AI Response Generator initialized on startup")
+        
+        yield
+    except Exception as e:
+        print(f"❌ Failed to initialize: {e}")
+        raise e
+    finally:
+        # Shutdown: Cleanup if needed
+        if _retriever:
+            await _retriever.close()
+        print("🔄 Application shutdown complete")
 
 app = FastAPI(
     title="RAG Knowledge Base API",
     description="API for processing documents and creating knowledge bases",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan  # Use modern lifespan instead of deprecated on_event
 )
 
-# Initialize the enhanced document processor
-processor = DocumentProcessor()
+# CORS setup
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# Include chat routes
+app.include_router(router=chat_router)
+        
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    # Handle the body properly - it might be bytes
+    body_content = exc.body
+    if isinstance(exc.body, bytes):
+        try:
+            body_content = exc.body.decode('utf-8')
+        except:
+            body_content = str(exc.body)
+    
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": body_content},
+    )
 
 @app.get("/")
 async def root():
@@ -33,174 +107,6 @@ async def root():
         "version": "1.0.0",
         "enhanced_processing": True
     }
-
-
-@app.get("/capabilities")
-async def get_capabilities():
-    """Get processing capabilities and supported file types."""
-    capabilities = processor.get_processing_capabilities()
-    return {
-        "enhanced_processor": True,
-        "content_core_available": capabilities["content_core_available"],
-        "supported_extensions": capabilities["supported_extensions"],
-        "processing_engines": capabilities["processing_engines"]
-    }
-
-
-@app.post("/process-file")
-async def process_file(
-    file: UploadFile = File(...),
-    chunk_size: int = 1000,
-    chunk_overlap: int = 200
-):
-    """Process a single file and return extracted content with chunks."""
-    try:
-        # Save uploaded file temporarily
-        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix) as temp_file:
-            content = await file.read()
-            temp_file.write(content)
-            temp_file_path = temp_file.name
-        
-        try:
-            # Process the file
-            result = await processor.process_file(temp_file_path)
-            
-            if not result["success"]:
-                raise HTTPException(
-                    status_code=400, 
-                    detail=f"File processing failed: {result.get('error', 'Unknown error')}"
-                )
-            
-            # Create chunks if content is substantial
-            chunks = []
-            if result["content_length"] > chunk_size:
-                document = Document(
-                    page_content=result["content"],
-                    metadata=result["metadata"]
-                )
-                chunks = chunk_documents_by_character(
-                    [document],
-                    chunk_size=chunk_size,
-                    chunk_overlap=chunk_overlap
-                )
-                
-                # Convert chunks to serializable format
-                chunks_data = []
-                for i, chunk in enumerate(chunks):
-                    chunks_data.append({
-                        "chunk_id": i,
-                        "content": chunk.page_content,
-                        "metadata": chunk.metadata
-                    })
-            else:
-                chunks_data = [{
-                    "chunk_id": 0,
-                    "content": result["content"],
-                    "metadata": result["metadata"]
-                }]
-            
-            return {
-                "success": True,
-                "file_info": {
-                    "filename": file.filename,
-                    "file_type": result["file_type"],
-                    "content_length": result["content_length"],
-                    "processing_engine": result["processing_engine"]
-                },
-                "content": result["content"],
-                "chunks": chunks_data,
-                "total_chunks": len(chunks_data)
-            }
-            
-        finally:
-            # Clean up temporary file
-            if os.path.exists(temp_file_path):
-                os.unlink(temp_file_path)
-                
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
-
-
-@app.post("/process-multiple")
-async def process_multiple_files(
-    files: List[UploadFile] = File(...),
-    max_concurrent: int = 3,
-    chunk_size: int = 1000,
-    chunk_overlap: int = 200
-):
-    """Process multiple files concurrently."""
-    try:
-        # Save uploaded files temporarily
-        temp_files = []
-        try:
-            for file in files:
-                with tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix) as temp_file:
-                    content = await file.read()
-                    temp_file.write(content)
-                    temp_files.append((temp_file.name, file.filename))
-            
-            # Process files
-            file_paths = [temp_path for temp_path, _ in temp_files]
-            results = await processor.process_multiple_files(
-                file_paths, 
-                max_concurrent=max_concurrent
-            )
-            
-            # Process results and create chunks
-            processed_results = []
-            for result in results:
-                if result["success"]:
-                    # Create chunks
-                    document = Document(
-                        page_content=result["content"],
-                        metadata=result["metadata"]
-                    )
-                    chunks = chunk_documents_by_character(
-                        [document],
-                        chunk_size=chunk_size,
-                        chunk_overlap=chunk_overlap
-                    )
-                    
-                    chunks_data = []
-                    for i, chunk in enumerate(chunks):
-                        chunks_data.append({
-                            "chunk_id": i,
-                            "content": chunk.page_content,
-                            "metadata": chunk.metadata
-                        })
-                    
-                    processed_results.append({
-                        "filename": result["file_path"],
-                        "success": True,
-                        "content_length": result["content_length"],
-                        "processing_engine": result["processing_engine"],
-                        "chunks": chunks_data,
-                        "total_chunks": len(chunks_data)
-                    })
-                else:
-                    processed_results.append({
-                        "filename": result["file_path"],
-                        "success": False,
-                        "error": result.get("error", "Unknown error")
-                    })
-            
-            return {
-                "success": True,
-                "total_files": len(files),
-                "successful": sum(1 for r in processed_results if r["success"]),
-                "failed": sum(1 for r in processed_results if not r["success"]),
-                "results": processed_results
-            }
-            
-        finally:
-            # Clean up temporary files
-            for temp_path, _ in temp_files:
-                if os.path.exists(temp_path):
-                    os.unlink(temp_path)
-                    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
-
 
 @app.get("/health")
 async def health_check():
