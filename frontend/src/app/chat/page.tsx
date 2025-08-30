@@ -1,7 +1,7 @@
 "use client";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
-import { BookOpen, Calculator, Atom, Cpu, Lightbulb, ArrowLeft } from "lucide-react";
+import { BookOpen, Sparkles, Cpu, MessageSquare, Mic, Image, ArrowLeft } from "lucide-react";
 
 type Subject = {
   id: string;
@@ -14,44 +14,44 @@ type Subject = {
 
 const subjects: Subject[] = [
   {
-    id: "mathematics",
-    name: "Mathematics",
-    description: "Calculus, Linear Algebra, Statistics",
-    icon: <Calculator className="w-8 h-8" />,
+    id: "Generative AI",
+    name: "Generative AI",
+    description: "Chatbots, Image Generation, Code Generation, Creative AI",
+    icon: <Sparkles className="w-8 h-8" />,
     color: "blue",
-    units: ["Unit 1: Differential Calculus", "Unit 2: Integral Calculus", "Unit 3: Linear Algebra", "Unit 4: Probability", "Unit 5: Statistics"]
+    units: ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5"]
   },
   {
-    id: "physics",
-    name: "Physics",
-    description: "Mechanics, Thermodynamics, Electromagnetism",
-    icon: <Atom className="w-8 h-8" />,
-    color: "purple",
-    units: ["Unit 1: Classical Mechanics", "Unit 2: Thermodynamics", "Unit 3: Electromagnetism", "Unit 4: Optics", "Unit 5: Modern Physics"]
-  },
-  {
-    id: "computer-science",
-    name: "Computer Science",
-    description: "Algorithms, Data Structures, Programming",
+    id: "Edge AI",
+    name: "Edge AI",
+    description: "Edge Computing, IoT AI, Real-time Processing",
     icon: <Cpu className="w-8 h-8" />,
     color: "green",
-    units: ["Unit 1: Programming Fundamentals", "Unit 2: Data Structures", "Unit 3: Algorithms", "Unit 4: Database Systems", "Unit 5: Software Engineering"]
+    units: ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5"]
   },
   {
-    id: "engineering",
-    name: "Engineering",
-    description: "Circuit Analysis, Control Systems, Signals",
-    icon: <Lightbulb className="w-8 h-8" />,
+    id: "Statistical Natural Language Processing",
+    name: "Statistical Natural Language Processing",
+    description: "Text Analysis, Language Models, Sentiment Analysis",
+    icon: <MessageSquare className="w-8 h-8" />,
+    color: "purple",
+    units: ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5"]
+  },
+  {
+    id: "Speech Processing",
+    name: "Speech Processing",
+    description: "Speech Recognition, Audio Analysis, Voice Synthesis",
+    icon: <Mic className="w-8 h-8" />,
     color: "orange",
-    units: ["Unit 1: Circuit Analysis", "Unit 2: Control Systems", "Unit 3: Signal Processing", "Unit 4: Power Systems", "Unit 5: Communication Systems"]
+    units: ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5"]
   },
   {
-    id: "general-studies",
-    name: "General Studies",
-    description: "Literature, History, Philosophy",
-    icon: <BookOpen className="w-8 h-8" />,
+    id: "Image Processing and Vision Techniques",
+    name: "Image Processing and Vision Techniques",
+    description: "Computer Vision, Image Analysis, Pattern Recognition",
+    icon: <Image className="w-8 h-8" />,
     color: "indigo",
-    units: ["Unit 1: Literature", "Unit 2: History", "Unit 3: Philosophy", "Unit 4: Economics", "Unit 5: Political Science"]
+    units: ["Unit 1", "Unit 2", "Unit 3", "Unit 4", "Unit 5"]
   }
 ];
 
