@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from api.utils import authenticate_user
+from api.utils import authenticate_user, get_pg_db, get_mongo_db
 from api.schemas import *
 from api.models import *
 from api.models.chat_models import ChatRequestModel, ChatResponseModel
@@ -8,10 +8,13 @@ from api.schemas.mongodb.subject import Subject
 from beanie.operators import And
 from api.loaders.data_retriever import get_vector_search_dependency
 from api.models.ai_response_generator import get_ai_response_dependency  # AI response generator
+from api.storage.postgres import *
+from collections import defaultdict
+import json 
 
 router = APIRouter(
     prefix="/chat",
-    tags=["chat"]
+    tags=["chat"],
 )
 
 
@@ -19,8 +22,10 @@ router = APIRouter(
 async def chat_message(
     request_data: ChatRequestModel,
     user=Depends(authenticate_user),
-    search_engine=Depends(get_vector_search_dependency),  # Vector search
-    ai_generator=Depends(get_ai_response_dependency)      # AI response generator
+    search_engine=Depends(get_vector_search_dependency),
+    ai_generator=Depends(get_ai_response_dependency),
+    pg_db=Depends(get_pg_db),
+    mongo_db=Depends(get_mongo_db)
 ):
     """Handle chat messages. Expect a ChatRequestModel (Pydantic) in the body."""
     try:
@@ -28,7 +33,6 @@ async def chat_message(
         subject = await Subject.find_one(Subject.name == request_data.subject)
         if not subject:
             raise HTTPException(status_code=404, detail=f"Subject '{request_data.subject}' not found")
-
         specific_unit = await Unit.find_one(
             And(
                 Unit.subject.id == subject.id,
@@ -50,6 +54,11 @@ async def chat_message(
             query=request_data.message,
             filters=filters
         )
+        
+        metadata = defaultdict(list)
+        for chunk in relevant_chunks:
+            document = str(chunk.metadata.get("document").id)
+            metadata[document].append(chunk.id)
 
         # Generate AI response using retrieved chunks
         if relevant_chunks:
@@ -68,6 +77,15 @@ async def chat_message(
                 subject=request_data.subject,
                 unit=request_data.unit
             )
+            chat_session = create_chat_session(user.id, request_data.chat_id, pg_db)
+
+            new_chat_message = create_message(
+                id=chat_session.id,
+                query=request_data.message,
+                response=ai_response,
+                chunks=[metadata],
+                db=pg_db
+            )
         else:
             ai_response = await ai_generator.generate_fallback_response(
                 question=request_data.message,
@@ -83,7 +101,7 @@ async def chat_message(
             "subject": request_data.subject,
             "unit": request_data.unit,
             "chunks_found": len(relevant_chunks),
-            "chunks": [chunk.page_content for chunk in relevant_chunks[:3]]
+            "chunks": metadata
         }
 
     except HTTPException:

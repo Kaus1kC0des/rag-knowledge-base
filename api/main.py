@@ -68,7 +68,8 @@ app = FastAPI(
     title="RAG Knowledge Base API",
     description="API for processing documents and creating knowledge bases",
     version="1.0.0",
-    lifespan=lifespan  # Use modern lifespan instead of deprecated on_event
+    lifespan=lifespan,
+    debug=True
 )
 
 # CORS setup
@@ -82,22 +83,7 @@ app.add_middleware(
 
 # Include chat routes
 app.include_router(router=chat_router)
-        
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
-    # Handle the body properly - it might be bytes
-    body_content = exc.body
-    if isinstance(exc.body, bytes):
-        try:
-            body_content = exc.body.decode('utf-8')
-        except:
-            body_content = str(exc.body)
-    
-    return JSONResponse(
-        status_code=422,
-        content={"detail": exc.errors(), "body": body_content},
-    )
 
 @app.get("/")
 async def root():
