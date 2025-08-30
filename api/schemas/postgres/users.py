@@ -1,8 +1,7 @@
-from api.schemas.postgres import Column, DateTime, ForeignKey, Text, Enum, JSON, UUID, String
+from api.schemas.postgres import Column, DateTime, ForeignKey, Text, Enum, JSON, String
 from api.schemas.postgres import relationship
 from api.schemas.postgres import BASE
 from datetime import datetime
-import uuid
 
 
 class Users(BASE):
