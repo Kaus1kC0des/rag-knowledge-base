@@ -19,12 +19,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 async function apiCall(endpoint: string, options: RequestInit = {}): Promise<ApiResponse> {
     try {
         console.log(options)
+        const { headers: optionHeaders, ...otherOptions } = options;
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             headers: {
                 "Content-Type": "application/json",
-                ...options.headers,
+                ...optionHeaders,
             },
-            ...options,
+            ...otherOptions,
         });
 
         if (!response.ok) {
@@ -51,15 +52,17 @@ export const chatAPI = {
         context?: { subject?: string; unit?: string },
         headers?: object
     ): Promise<string> => {
+        const payload = {
+            message,
+            chat_id: chatId ?? `temp-${Date.now()}`,
+            subject: context?.subject,
+            unit: context?.unit,
+            timestamp: new Date().toISOString()
+        };
+
         const response = await apiCall("/chat/message", {
             method: "POST",
-            body: JSON.stringify({
-                message,
-                chat_id: chatId,
-                subject: context?.subject,
-                unit: context?.unit,
-                timestamp: new Date().toISOString()
-            }),
+            body: JSON.stringify(payload),
             headers,
         });
 
