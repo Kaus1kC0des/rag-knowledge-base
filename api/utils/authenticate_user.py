@@ -5,12 +5,17 @@ from api.models import UserModel
 import os
 import jwt
 import warnings
+from fastapi import HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 warnings.filterwarnings("always")
 load_dotenv()
 
 CLERK_JWKS_URL = os.getenv("CLERK_JWKS_URL")
-async def authenticate_user(jwt_token: str):
+security = HTTPBearer()
+
+async def authenticate_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    jwt_token = credentials.credentials
     clerk_api_key = os.getenv("CLERK_API_KEY")
     try:
         # Fetch JWKS and verify JWT
@@ -33,4 +38,4 @@ async def authenticate_user(jwt_token: str):
             return UserModel(id=user_id, first_name=user_first_name, last_name=user_last_name, email=user_email_address)
     except Exception as e:
         print(f"Authentication failed: {e}")
-        return None
+        raise HTTPException(status_code=401, detail="Authentication failed")

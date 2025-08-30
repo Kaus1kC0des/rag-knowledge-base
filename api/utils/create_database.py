@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from api.schemas.postgres import BASE, ChatSession, ChatMessage, Users
+from api.schemas.postgres import BASE, ChatSession, ChatMessage
 from dotenv import load_dotenv
 import os
 
@@ -13,23 +13,13 @@ ENGINE = create_engine(url=DATABASE_URL)
 
 with ENGINE.connect() as connection:
     try:
-        connection.execute(text("CREATE SCHEMA IF NOT EXISTS 'ragApp'"))
+        connection.execute(text('CREATE SCHEMA IF NOT EXISTS "ragApp"'))
         connection.commit()
-        print("Schema 'rag_app' ensured.")
+        print("Schema 'ragApp' ensured.")
     except Exception as e:
         print(f"Error creating schema: {e}")
 
 BASE.metadata.create_all(bind=ENGINE)
-
-SESSION = sessionmaker(bind=ENGINE, autoflush=False, autocommit=False)
-
-def get_db():
-    session = SESSION()
-    try:
-        yield session
-    finally:
-        session.close()
-
 if __name__ == "__main__":
     with ENGINE.connect() as connection:
         result = connection.execute(text(
