@@ -95,10 +95,10 @@ class GeminiResponseGenerator:
 
         # Create the chain: prompt -> LLM -> string output
         chain = (
-            RunnablePassthrough()  # Pass through all inputs
+            RunnablePassthrough()
             | prompt
             | self.llm
-            | StrOutputParser()  # Convert to string
+            | StrOutputParser()
         )
 
         return chain
