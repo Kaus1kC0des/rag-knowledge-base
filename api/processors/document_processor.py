@@ -1,14 +1,15 @@
-import os
-import re
-import sys
+from api.schemas.mongodb import SourceDocument, Chunk
+from api.processors.vector_embedder import ChunkEmbedder
 from typing import List, Optional
-
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, OnlinePDFLoader, PagedPDFSplitter
 from langchain_core.documents import Document as LCDocument
+from pathlib import Path
+import os
+import re
+import sys
+import subprocess
 
-from api.schemas.mongodb import SourceDocument, Chunk
-from api.processors.vector_embedder import ChunkEmbedder
 
 
 # ---------------------------

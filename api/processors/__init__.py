@@ -1,9 +1,8 @@
-from .document_processor import DocumentProcessor
 from .vector_embedder import ChunkEmbedder, QueryEmbedder
-
+from .miner_processor import MinerProcessor
 
 __all__ = [
-    "DocumentProcessor",
     "ChunkEmbedder",
-    "QueryEmbedder"
+    "QueryEmbedder",
+    "MinerProcessor"
 ]
