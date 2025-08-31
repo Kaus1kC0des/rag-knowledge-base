@@ -1,10 +1,7 @@
 import asyncio
 import os
-import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-from api.processors import DocumentProcessor
+from api.processors import MinerProcessor
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 from api.schemas.mongodb import Chunk, SourceDocument, Subject, Unit
@@ -30,9 +27,9 @@ async def populate_chunks():
     for document in all_documents:
         document.subject = await document.subject.fetch()
         document.unit = await document.unit.fetch()
-        processor = DocumentProcessor(document)
+        processor = MinerProcessor(document)
         chunks = await processor.process_and_create_chunks(chunk_size=800, overlap=150)
-        print("Emedding Dimension:", len(chunks[0].vector_embedding))
+        print("Embedding Dimension:", len(chunks[0].vector_embedding))
         if not chunks:
             print(f"No chunks created for document ID {document.id}. Skipping insertion.")
             continue
