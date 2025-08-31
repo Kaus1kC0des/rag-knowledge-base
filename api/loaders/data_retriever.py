@@ -72,6 +72,13 @@ class MongoVectorSearchEngine:
         
         return await self.vector_store.asimilarity_search(query, pre_filter=filters, k=7)
 
+    async def search_by_vector(self, vector: list[float], filters: Optional[Dict[str, Any]] = None):
+        """Perform search by vector using the vector store."""
+        if not self.vector_store:
+            raise RuntimeError("Vector store not initialized. Call initialize() first.")
+
+        return await self.vector_store.asimilarity_search_by_vector(vector, pre_filter=filters, k=7)
+
     async def close(self):
         """Close the MongoDB client connection."""
         if self.client:
