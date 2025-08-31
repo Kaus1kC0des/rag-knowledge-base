@@ -8,7 +8,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen font-sans">
       {/* You can add a global header, sidebar, or footer here if needed */}
-      <header className="sticky top-0 z-10 border-b flex items-center justify-between px-6 py-4 shadow-sm">
+      <header className="sticky top-0 z-10 border-b flex items-center justify-between px-6 py-4 shadow-sm bg-surface">
         <h1 className="text-2xl font-bold tracking-tight">
           Notepad LLM
         </h1>

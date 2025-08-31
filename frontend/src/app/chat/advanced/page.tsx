@@ -4,6 +4,7 @@ import { Send, Bot, User, Menu, X, Trash2, Edit3, ChevronDown, BookOpen, Sparkle
 import { useRouter, useSearchParams } from "next/navigation";
 import { dummyAPI, chatAPI } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
+import ReactMarkdown from 'react-markdown';
 
 type Message = {
   id: string;
@@ -493,7 +494,9 @@ export default function AdvancedChatPage() {
                     : "bg-surface text-primary shadow-sm border border-default"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <ReactMarkdown>
+                  {message.content}
+                  </ReactMarkdown>
                 <p
                   className={`text-xs mt-1 ${
                     message.sender === "user"
