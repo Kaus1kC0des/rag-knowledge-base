@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from api.utils import authenticate_user, get_pg_db, get_mongo_db
-from api.schemas import *
-from api.models import *
+from api.utils import get_redis_db
+from api.processors import QueryEmbedder
 from api.models.chat_models import ChatRequestModel, ChatResponseModel
 from api.schemas.mongodb.unit import Unit
 from api.schemas.mongodb.subject import Subject
@@ -10,7 +10,10 @@ from api.loaders.data_retriever import get_vector_search_dependency
 from api.models.ai_response_generator import get_ai_response_dependency  # AI response generator
 from api.storage.postgres import *
 from collections import defaultdict
-import json 
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 router = APIRouter(
     prefix="/chat",
@@ -25,7 +28,9 @@ async def chat_message(
     search_engine=Depends(get_vector_search_dependency),
     ai_generator=Depends(get_ai_response_dependency),
     pg_db=Depends(get_pg_db),
-    mongo_db=Depends(get_mongo_db)
+    mongo_db=Depends(get_mongo_db),
+    redis_db=Depends(get_redis_db),
+    query_embedder=Depends(QueryEmbedder)
 ):
     """Handle chat messages. Expect a ChatRequestModel (Pydantic) in the body."""
     try:
