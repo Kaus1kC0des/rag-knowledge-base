@@ -4,7 +4,7 @@ import { Send, Bot, User, Menu, X, Trash2, Edit3, ChevronDown, BookOpen, Sparkle
 import { useRouter, useSearchParams } from "next/navigation";
 import { dummyAPI, chatAPI } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
-import ReactMarkdown from 'react-markdown';
+import Markdown from "@/components/Markdown";
 
 type Message = {
   id: string;
@@ -292,7 +292,7 @@ export default function AdvancedChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-80px)] bg-chat">
+    <div className="flex h-[calc(100vh-65px)] bg-chat">
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 overflow-hidden`}>
         <div className="w-80 bg-header border-r border-default flex flex-col h-full">
@@ -480,23 +480,17 @@ export default function AdvancedChatPage() {
               className={`flex items-start space-x-3 ${
                 message.sender === "user" ? "justify-end" : "justify-start"
               }`}
-            >
-              {message.sender === "ai" && (
-                <div className="flex-shrink-0 w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-                  <Bot className="w-5 h-5 text-inverse" />
-                </div>
-              )}
-              
+            > 
               <div
-                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                className={`px-4 py-2 rounded-lg ${
                   message.sender === "user"
-                    ? "bg-accent text-inverse"
-                    : "bg-surface text-primary shadow-sm border border-default"
+                    ? "bg-accent text-inverse max-w-xs lg:max-w-md "
+                    : ""
                 }`}
               >
-                  <ReactMarkdown>
+                  <Markdown >
                   {message.content}
-                  </ReactMarkdown>
+                  </Markdown>
                 <p
                   className={`text-xs mt-1 ${
                     message.sender === "user"
