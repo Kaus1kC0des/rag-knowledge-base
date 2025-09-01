@@ -1,4 +1,4 @@
-from api.schemas.postgres import Column, DateTime, ForeignKey, String, Integer
+from api.schemas.postgres import Column, DateTime, String, Integer
 from api.schemas.postgres import relationship
 from api.schemas.postgres import BASE
 from datetime import datetime
@@ -8,6 +8,8 @@ class ChatSession(BASE):
     __table_args__ = ({"schema": "ragapp"})
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    subject_id = Column(String, nullable=False, index=True)
+    unit_id = Column(String, nullable=False, index=True)
     user_id = Column(String, nullable=False, index=True)
     title = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.now)

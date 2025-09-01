@@ -11,9 +11,9 @@ ENGINE = create_engine(url=DATABASE_URL)
 
 with ENGINE.connect() as connection:
     try:
-        connection.execute(text('CREATE SCHEMA IF NOT EXISTS "ragApp"'))
+        connection.execute(text('CREATE SCHEMA IF NOT EXISTS "ragapp"'))
         connection.commit()
-        print("Schema 'rag_app' ensured.")
+        print("Schema 'ragapp' ensured.")
     except Exception as e:
         print(f"Error creating schema: {e}")
 

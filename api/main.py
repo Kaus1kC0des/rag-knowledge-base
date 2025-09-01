@@ -11,6 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
 from api.loaders.data_retriever import get_vector_search_engine
 from api.routes.chat_routes import router as chat_router
+from api.routes.session_routes import router as session_router
 
 # Global retriever instance
 _retriever = None
@@ -83,7 +84,7 @@ app.add_middleware(
 
 # Include chat routes
 app.include_router(router=chat_router)
-
+app.include_router(router=session_router)
 
 @app.get("/")
 async def root():

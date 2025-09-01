@@ -11,3 +11,4 @@ __pycache__/
 api/data/
 .DS_Store
 *.json
+node_modules/

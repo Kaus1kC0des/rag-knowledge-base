@@ -7,7 +7,7 @@ from api.schemas.mongodb.unit import Unit
 from api.schemas.mongodb.subject import Subject
 from beanie.operators import And
 from api.loaders.data_retriever import get_vector_search_dependency
-from api.models.ai_response_generator import get_ai_response_dependency  # AI response generator
+from api.models.ai_response_generator import get_ai_response_dependency
 from api.storage.postgres import *
 from collections import defaultdict
 import logging
@@ -29,7 +29,6 @@ async def chat_message(
     ai_generator=Depends(get_ai_response_dependency),
     pg_db=Depends(get_pg_db),
     mongo_db=Depends(get_mongo_db),
-    redis_db=Depends(get_redis_db),
     query_embedder=Depends(QueryEmbedder)
 ):
     """Handle chat messages. Expect a ChatRequestModel (Pydantic) in the body."""
