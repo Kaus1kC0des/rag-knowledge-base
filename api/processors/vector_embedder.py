@@ -10,14 +10,10 @@ class ChunkEmbedder:
     A dedicated class for creating vector embeddings from text.
     """
 
-    def __init__(self, model_name: str = "gemini-embedding-001"):
+    def _init_(self, model_name: str = "gemini-embedding-001"):
         """Initializes the VectorEmbedder with a specified embedding model."""
         self.model_name = model_name
-        self.embedder = GoogleGenerativeAIEmbeddings(
-            model=self.model_name,
-            task_type="RETRIEVAL_DOCUMENT",
-            google_api_key=os.getenv("GEMINI_API_KEY")
-        )
+        self.embedder = None
         print(f"VectorEmbedder initialized with model: {self.model_name}")
 
     def get_model_name(self) -> str:
@@ -37,6 +33,13 @@ class ChunkEmbedder:
         if not texts:
             return []
 
+        if self.embedder is None:
+            self.embedder = GoogleGenerativeAIEmbeddings(
+                model=self.model_name,
+                task_type="RETRIEVAL_DOCUMENT",
+                google_api_key=os.getenv("GEMINI_API_KEY")
+            )
+
         print(f"Embedding {len(texts)} chunks of text...")
         vectors = await self.embedder.aembed_documents(texts)
         print("Embedding complete.")
@@ -45,12 +48,8 @@ class ChunkEmbedder:
 
 
 class QueryEmbedder():
-    def __init__(self):
-        self.model = GoogleGenerativeAIEmbeddings(
-            model=os.getenv("GOOGLE_EMBEDDING_MODEL", "gemini-embedding-001"),
-            task_type="RETRIEVAL_QUERY",
-            google_api_key=os.getenv("GEMINI_API_KEY")
-        )
+    def _init_(self):
+        self.embedder = None
 
     async def embed_query(self, query: str) -> List[float]:
         """
@@ -64,6 +63,13 @@ class QueryEmbedder():
         """
         if not query:
             return []
+
+        if self.embedder is None:
+            self.embedder = GoogleGenerativeAIEmbeddings(
+                model=os.getenv("GOOGLE_EMBEDDING_MODEL", "gemini-embedding-001"),
+                task_type="RETRIEVAL_QUERY",
+                google_api_key=os.getenv("GEMINI_API_KEY")
+            )
 
         vector = await self.embedder.aembed_query(query)
         return vector

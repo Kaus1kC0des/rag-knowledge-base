@@ -50,7 +50,7 @@ export const chatAPI = {
         message: string,
         chatId?: string,
         context?: { subject?: string; unit?: string },
-        headers?: object
+        headers?: HeadersInit
     ): Promise<string> => {
         const payload = {
             message,
@@ -217,5 +217,132 @@ export const dummyAPI = {
             unitEnhancements.default;
 
         return `${randomResponse}${unitContext}${enhancement}.\n\nYou asked: "${message}"\n\nThis is particularly relevant because it connects to fundamental principles in ${subject || 'this field'} and will help you build a strong foundation for more advanced topics.`;
+    },
+};
+
+// Session-specific API functions
+export interface ChatSession {
+    id: number;
+    subject_id: string;
+    unit_id: string;
+    title?: string;
+    messages: Array<{
+        query: string;
+        response: string;
+        sources?: any[];
+        chat_id?: string;
+        message_id?: number;
+        user_metadata?: any;
+    }>;
+    last_updated?: string;
+}
+
+export interface SessionsResponse {
+    sessions: ChatSession[];
+}
+
+export const sessionAPI = {
+    // Get all sessions for a subject and unit
+    getAllSessions: async (
+        subjectId: string, 
+        unitId: string,
+        headers?: HeadersInit
+    ): Promise<ChatSession[]> => {
+        const payload = {
+            subject_id: subjectId,
+            unit_id: unitId
+        };
+
+        const response = await apiCall("/session/all_sessions", {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers,
+        });
+
+        if (response.success && response.data) {
+            return response.data.sessions || [];
+        } else {
+            throw new Error(response.error || "Failed to get sessions");
+        }
+    },
+
+    // Create a new session
+    createSession: async (
+        subjectId: string,
+        unitId: string,
+        title?: string,
+        headers?: HeadersInit
+    ): Promise<ChatSession> => {
+        const payload = {
+            subject_id: subjectId,
+            unit_id: unitId,
+            title: title || `New Chat ${Date.now()}`
+        };
+
+        const response = await apiCall("/session/create_session", {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers,
+        });
+
+        if (response.success && response.data) {
+            return response.data;
+        } else {
+            throw new Error(response.error || "Failed to create session");
+        }
+    },
+
+    // Get a specific session by ID
+    getSession: async (
+        chatId: number,
+        headers?: HeadersInit
+    ): Promise<ChatSession> => {
+        const response = await apiCall(`/session/session/${chatId}`, {
+            method: "GET",
+            headers,
+        });
+
+        if (response.success && response.data) {
+            return response.data;
+        } else {
+            throw new Error(response.error || "Failed to get session");
+        }
+    },
+
+    // Delete a specific session
+    deleteSession: async (
+        chatId: number,
+        headers?: HeadersInit
+    ): Promise<void> => {
+        const response = await apiCall(`/session/session/${chatId}`, {
+            method: "DELETE",
+            headers,
+        });
+
+        if (!response.success) {
+            throw new Error(response.error || "Failed to delete session");
+        }
+    },
+
+    // Delete all sessions for a subject and unit
+    deleteAllSessions: async (
+        subjectId: string,
+        unitId: string,
+        headers?: HeadersInit
+    ): Promise<void> => {
+        const payload = {
+            subject_id: subjectId,
+            unit_id: unitId
+        };
+
+        const response = await apiCall("/session/all_sessions", {
+            method: "DELETE",
+            body: JSON.stringify(payload),
+            headers,
+        });
+
+        if (!response.success) {
+            throw new Error(response.error || "Failed to delete all sessions");
+        }
     },
 };

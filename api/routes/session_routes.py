@@ -12,7 +12,7 @@ router = APIRouter(
     tags=["session"]
 )
 
-@router.get("/all_sessions", response_model=ChatSessionHistoryModel)
+@router.post("/all_sessions", response_model=ChatSessionHistoryModel)
 async def get_all_sessions(
     request_data: ChatSessionRequestModel,
     user=Depends(authenticate_user),

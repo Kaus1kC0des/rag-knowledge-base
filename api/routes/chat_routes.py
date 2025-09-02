@@ -8,6 +8,9 @@ from api.schemas.mongodb.subject import Subject
 from beanie.operators import And
 from api.loaders.data_retriever import get_vector_search_dependency
 from api.models.ai_response_generator import get_ai_response_dependency
+from api.storage.postgres.chat_session_manager import (
+    get_all_chat_sessions, create_chat_session, get_chat_session, delete_chat_session, delete_all_chat_sessions
+)
 from api.storage.postgres import *
 from collections import defaultdict
 import logging
@@ -81,7 +84,31 @@ async def chat_message(
                 subject=request_data.subject,
                 unit=request_data.unit
             )
-            chat_session = create_chat_session(user.id, request_data.chat_id, pg_db)
+            
+            # Get or create chat session based on chat_id
+            chat_session = None
+            if request_data.chat_id:
+                try:
+                    # Try to get existing session
+                    chat_session = get_chat_session(user.id, int(request_data.chat_id), pg_db)
+                except:
+                    # If session doesn't exist, create a new one
+                    chat_session = create_chat_session(
+                        user.id, 
+                        str(subject.id), 
+                        str(specific_unit.id), 
+                        pg_db,
+                        f"{request_data.subject} - {request_data.unit}"
+                    )
+            else:
+                # Create new session if no chat_id provided
+                chat_session = create_chat_session(
+                    user.id, 
+                    str(subject.id), 
+                    str(specific_unit.id), 
+                    pg_db,
+                    f"{request_data.subject} - {request_data.unit}"
+                )
 
             new_chat_message = create_message(
                 id=chat_session.id,
@@ -96,6 +123,39 @@ async def chat_message(
                 subject=request_data.subject,
                 unit=request_data.unit,
                 error_message="No relevant chunks found in vector search"
+            )
+            
+            # Get or create chat session even when no chunks found
+            chat_session = None
+            if request_data.chat_id:
+                try:
+                    # Try to get existing session
+                    chat_session = get_chat_session(user.id, int(request_data.chat_id), pg_db)
+                except:
+                    # If session doesn't exist, create a new one
+                    chat_session = create_chat_session(
+                        user.id, 
+                        str(subject.id), 
+                        str(specific_unit.id), 
+                        pg_db,
+                        f"{request_data.subject} - {request_data.unit}"
+                    )
+            else:
+                # Create new session if no chat_id provided
+                chat_session = create_chat_session(
+                    user.id, 
+                    str(subject.id), 
+                    str(specific_unit.id), 
+                    pg_db,
+                    f"{request_data.subject} - {request_data.unit}"
+                )
+
+            new_chat_message = create_message(
+                id=chat_session.id,
+                query=request_data.message,
+                response=ai_response,
+                chunks=[],
+                db=pg_db
             )
 
         return {

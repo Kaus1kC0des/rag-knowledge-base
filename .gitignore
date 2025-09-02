@@ -12,3 +12,4 @@ api/data/
 .DS_Store
 *.json
 node_modules/
+frontend/node_modules/

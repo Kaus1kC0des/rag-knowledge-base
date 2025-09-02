@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Menu, X, Trash2, Edit3, ChevronDown, BookOpen, Sparkles, Cpu, MessageSquare, Mic, Image, ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { dummyAPI, chatAPI } from "@/lib/api";
+import { dummyAPI, chatAPI, sessionAPI, type ChatSession } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import Markdown from "@/components/Markdown";
 
@@ -11,15 +11,6 @@ type Message = {
   content: string;
   sender: "user" | "ai";
   timestamp: Date;
-};
-
-type Chat = {
-  id: string;
-  title: string;
-  messages: Message[];
-  updatedAt: Date;
-  subject?: string;
-  unit?: string;
 };
 
 type Subject = {
@@ -80,68 +71,139 @@ export default function AdvancedChatPage() {
   
   const currentSubject = subjects.find(s => s.id === urlSubject) || subjects[0];
   
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [currentChatId, setCurrentChatId] = useState<string>("");
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string>(currentSubject.id);
   const [selectedUnit, setSelectedUnit] = useState<string>(urlUnit || currentSubject.units[0]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingSessions, setLoadingSessions] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [editingSessionId, setEditingSessionId] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const [unitDropdownOpen, setUnitDropdownOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize chats for the current subject
-  useEffect(() => {
-    if (selectedSubject && selectedUnit) {
-      const subjectData = subjects.find(s => s.id === selectedSubject);
-      if (subjectData) {
-        const initialChat: Chat = {
-          id: `${selectedSubject}-chat-1`,
-          title: `${subjectData.name} - Getting Started`,
-          messages: [
-            {
-              id: `msg-${Date.now()}`,
-              content: `Hello! I'm your AI assistant for ${subjectData.name}. I can help you with any questions or topics related to ${selectedUnit}. What would you like to learn about today?`,
-              sender: "ai",
-              timestamp: new Date(),
-            },
-          ],
-          updatedAt: new Date(),
-          subject: selectedSubject,
-          unit: selectedUnit,
-        };
-
-        setChats([initialChat]);
-        setCurrentChatId(initialChat.id);
-      }
-    }
-  }, [selectedSubject, selectedUnit]);
-
-  const currentChat = chats.find(chat => chat.id === currentChatId);
+  const currentSession = sessions.find(session => session.id === currentSessionId);
   const activeSubject = subjects.find(s => s.id === selectedSubject) || subjects[0];
 
-  // Filter chats by current subject only
-  const subjectChats = chats.filter(chat => chat.subject === selectedSubject);
+  // Convert API messages to frontend Message format
+  const convertToMessages = (session: ChatSession): Message[] => {
+    if (!session.messages) return [];
+    
+    const messages: Message[] = [];
+    session.messages.forEach((msg, index) => {
+      // Add user message
+      messages.push({
+        id: `user-${session.id}-${index}`,
+        content: msg.query,
+        sender: "user",
+        timestamp: new Date()
+      });
+      
+      // Add AI response
+      messages.push({
+        id: `ai-${session.id}-${index}`,
+        content: msg.response,
+        sender: "ai",
+        timestamp: new Date()
+      });
+    });
+    
+    return messages;
+  };
 
+  // Get auth headers
+  const getAuthHeaders = async (): Promise<HeadersInit> => {
+    const token = await getToken({ template: "user-auth-token-template" });
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  // Load sessions for current subject and unit
+  const loadSessions = async () => {
+    if (!selectedSubject || !selectedUnit) return;
+    
+    setLoadingSessions(true);
+    try {
+      const headers = await getAuthHeaders();
+      const sessionList = await sessionAPI.getAllSessions(selectedSubject, selectedUnit, headers);
+      setSessions(sessionList);
+      
+      // If no current session is selected, select the first one or create a new one
+      if (sessionList.length > 0 && !currentSessionId) {
+        setCurrentSessionId(sessionList[0].id);
+      } else if (sessionList.length === 0) {
+        await handleCreateSession();
+      }
+    } catch (error) {
+      console.error("Error loading sessions:", error);
+      // If no sessions exist, create one
+      await handleCreateSession();
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  // Create a new session
+  const handleCreateSession = async () => {
+    try {
+      const headers = await getAuthHeaders();
+      const newSession = await sessionAPI.createSession(
+        selectedSubject,
+        selectedUnit,
+        `${activeSubject.name} - ${selectedUnit}`,
+        headers
+      );
+      
+      setSessions(prev => [newSession, ...prev]);
+      setCurrentSessionId(newSession.id);
+    } catch (error) {
+      console.error("Error creating session:", error);
+    }
+  };
+
+  // Delete a session
+  const handleDeleteSession = async (sessionId: number) => {
+    if (sessions.length <= 1) return; // Keep at least one session
+    
+    try {
+      const headers = await getAuthHeaders();
+      await sessionAPI.deleteSession(sessionId, headers);
+      
+      setSessions(prev => prev.filter(session => session.id !== sessionId));
+      
+      if (currentSessionId === sessionId) {
+        const remainingSessions = sessions.filter(session => session.id !== sessionId);
+        setCurrentSessionId(remainingSessions[0]?.id || null);
+      }
+    } catch (error) {
+      console.error("Error deleting session:", error);
+    }
+  };
+
+  // Load sessions when subject or unit changes
+  useEffect(() => {
+    loadSessions();
+  }, [selectedSubject, selectedUnit]);
+
+  // Scroll to bottom when messages change
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [currentChat?.messages]);
+  }, [currentSession]);
 
   // Enhanced API call with subject and unit context
   const sendMessageWithContext = async (message: string, subject: string, unit: string): Promise<string> => {
     try {
-      const token = await getToken({ template: "user-auth-token-template" });
+      const headers = await getAuthHeaders();
       const response = await chatAPI.sendMessage(
         message,
-        currentChatId,
+        currentSessionId?.toString(),
         { subject, unit },
-        token ? { Authorization: `Bearer ${token}` } : undefined
+        headers
       );
       return response;
     } catch (error) {
@@ -150,21 +212,8 @@ export default function AdvancedChatPage() {
   };
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading || !currentChat) return;
-    const userMessage: Message = {
-      id: `msg-${Date.now()}`,
-      content: inputMessage,
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    // Update current chat with user message
-    setChats(prev => prev.map(chat => 
-      chat.id === currentChatId 
-        ? { ...chat, messages: [...chat.messages, userMessage], updatedAt: new Date(), subject: selectedSubject, unit: selectedUnit }
-        : chat
-    ));
-
+    if (!inputMessage.trim() || isLoading || !currentSession) return;
+    
     const currentMessage = inputMessage;
     setInputMessage("");
     setIsLoading(true);
@@ -172,111 +221,46 @@ export default function AdvancedChatPage() {
     try {
       const aiResponse = await sendMessageWithContext(currentMessage, selectedSubject, selectedUnit);
       
-      const aiMessage: Message = {
-        id: `msg-${Date.now() + 1}`,
-        content: aiResponse,
-        sender: "ai",
-        timestamp: new Date(),
-      };
-
-      // Update current chat with AI response
-      setChats(prev => prev.map(chat => 
-        chat.id === currentChatId 
-          ? { ...chat, messages: [...chat.messages, aiMessage], updatedAt: new Date() }
-          : chat
+      // Reload the current session to get updated messages
+      const headers = await getAuthHeaders();
+      const updatedSession = await sessionAPI.getSession(currentSessionId!, headers);
+      
+      // Update sessions with the new data
+      setSessions(prev => prev.map(session => 
+        session.id === currentSessionId ? updatedSession : session
       ));
+      
     } catch (error) {
       console.error("Error calling AI API:", error);
-      const errorMessage: Message = {
-        id: `msg-${Date.now() + 1}`,
-        content: "Sorry, I encountered an error while processing your request. Please try again.",
-        sender: "ai",
-        timestamp: new Date(),
-      };
-      
-      setChats(prev => prev.map(chat => 
-        chat.id === currentChatId 
-          ? { ...chat, messages: [...chat.messages, errorMessage], updatedAt: new Date() }
-          : chat
-      ));
+      // You could show an error message to the user here
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCreateChat = () => {
-    const newChatNumber = subjectChats.length + 1;
-    const newChat: Chat = {
-      id: `${selectedSubject}-chat-${Date.now()}`,
-      title: `${activeSubject.name} - Discussion ${newChatNumber}`,
-      messages: [
-        {
-          id: `msg-${Date.now()}`,
-          content: `Hello! I'm ready to help you with ${activeSubject.name}. What would you like to explore in ${selectedUnit}?`,
-          sender: "ai",
-          timestamp: new Date(),
-        },
-      ],
-      updatedAt: new Date(),
-      subject: selectedSubject,
-      unit: selectedUnit,
-    };
-
-    setChats(prev => [newChat, ...prev]);
-    setCurrentChatId(newChat.id);
-  };
-
-  const handleSubjectChange = (subjectId: string) => {
+  const handleSubjectChange = async (subjectId: string) => {
     setSelectedSubject(subjectId);
     const newSubject = subjects.find(s => s.id === subjectId);
     if (newSubject) {
       setSelectedUnit(newSubject.units[0]);
-      
-      // Create initial chat for the new subject if none exists
-      const existingSubjectChats = chats.filter(chat => chat.subject === subjectId);
-      if (existingSubjectChats.length === 0) {
-        const initialChat: Chat = {
-          id: `${subjectId}-chat-${Date.now()}`,
-          title: `${newSubject.name} - Getting Started`,
-          messages: [
-            {
-              id: `msg-${Date.now()}`,
-              content: `Hello! I'm your AI assistant for ${newSubject.name}. I can help you with any questions or topics related to ${newSubject.units[0]}. What would you like to learn about today?`,
-              sender: "ai",
-              timestamp: new Date(),
-            },
-          ],
-          updatedAt: new Date(),
-          subject: subjectId,
-          unit: newSubject.units[0],
-        };
-        
-        setChats(prev => [initialChat, ...prev]);
-        setCurrentChatId(initialChat.id);
-      } else {
-        // Switch to the most recent chat in this subject
-        setCurrentChatId(existingSubjectChats[0].id);
-      }
+      setCurrentSessionId(null);
+      setSessions([]);
     }
   };
 
-  const handleDeleteChat = (chatId: string) => {
-    const subjectSpecificChats = chats.filter(chat => chat.subject === selectedSubject);
-    if (subjectSpecificChats.length <= 1) return; // Keep at least one chat per subject
-
-    setChats(prev => prev.filter(chat => chat.id !== chatId));
-    
-    if (currentChatId === chatId) {
-      const remainingSubjectChats = subjectSpecificChats.filter(chat => chat.id !== chatId);
-      setCurrentChatId(remainingSubjectChats[0]?.id || "");
-    }
+  const handleUnitChange = async (unit: string) => {
+    setSelectedUnit(unit);
+    setCurrentSessionId(null);
+    setSessions([]);
+    setUnitDropdownOpen(false);
   };
 
-  const handleEditChatTitle = (chatId: string, newTitle: string) => {
-    setChats(prev => prev.map(chat => 
-      chat.id === chatId ? { ...chat, title: newTitle } : chat
+  const handleEditSessionTitle = async (sessionId: number, newTitle: string) => {
+    // For now, just update locally. You could add an API endpoint to update session title
+    setSessions(prev => prev.map(session => 
+      session.id === sessionId ? { ...session, title: newTitle } : session
     ));
-    setEditingChatId(null);
+    setEditingSessionId(null);
     setEditingTitle("");
   };
 
@@ -287,9 +271,12 @@ export default function AdvancedChatPage() {
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (dateString?: string) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  const currentMessages = currentSession ? convertToMessages(currentSession) : [];
 
   return (
     <div className="flex h-[calc(100vh-65px)] bg-chat">
@@ -334,10 +321,7 @@ export default function AdvancedChatPage() {
                     {activeSubject.units.map((unit, index) => (
                       <button
                         key={index}
-                        onClick={() => {
-                          setSelectedUnit(unit);
-                          setUnitDropdownOpen(false);
-                        }}
+                        onClick={() => handleUnitChange(unit)}
                         className="w-full p-2 text-left hover-surface text-primary border-b border-default last:border-b-0"
                       >
                         {unit}
@@ -349,42 +333,47 @@ export default function AdvancedChatPage() {
             </div>
 
             <button
-              onClick={handleCreateChat}
+              onClick={handleCreateSession}
               className="w-full flex items-center justify-center space-x-2 btn-primary rounded-lg px-3 py-2 transition-colors"
+              disabled={loadingSessions}
             >
-              <span>+ New Chat</span>
+              <span>{loadingSessions ? "Loading..." : "+ New Session"}</span>
             </button>
           </div>
 
-          {/* Chat List */}
+          {/* Sessions List */}
           <div className="flex-1 overflow-y-auto">
             <div className="p-2 space-y-1">
-              {subjectChats.length === 0 ? (
-                <div className="p-4 text-center text-gray-400">
-                  <div className="text-sm">No chats for {activeSubject.name}</div>
-                  <div className="text-xs mt-1">Create your first chat!</div>
+              {loadingSessions ? (
+                <div className="p-4 text-center text-secondary">
+                  <div className="text-sm">Loading sessions...</div>
+                </div>
+              ) : sessions.length === 0 ? (
+                <div className="p-4 text-center text-secondary">
+                  <div className="text-sm">No sessions for {activeSubject.name}</div>
+                  <div className="text-xs mt-1">Create your first session!</div>
                 </div>
               ) : (
-                subjectChats.map((chat) => (
+                sessions.map((session) => (
                   <div
-                    key={chat.id}
+                    key={session.id}
                     className={`group relative p-3 rounded-lg cursor-pointer transition-colors ${
-                      currentChatId === chat.id
+                      currentSessionId === session.id
                         ? "item-active border"
                         : "hover-surface"
                     }`}
-                    onClick={() => setCurrentChatId(chat.id)}
+                    onClick={() => setCurrentSessionId(session.id)}
                   >
                     <div className="flex items-center justify-between">
-                      {editingChatId === chat.id ? (
+                      {editingSessionId === session.id ? (
                         <input
                           type="text"
                           value={editingTitle}
                           onChange={(e) => setEditingTitle(e.target.value)}
-                          onBlur={() => handleEditChatTitle(chat.id, editingTitle)}
+                          onBlur={() => handleEditSessionTitle(session.id, editingTitle)}
                           onKeyPress={(e) => {
                             if (e.key === "Enter") {
-                              handleEditChatTitle(chat.id, editingTitle);
+                              handleEditSessionTitle(session.id, editingTitle);
                             }
                           }}
                           className="flex-1 text-sm font-medium form-input rounded px-2 py-1"
@@ -393,19 +382,21 @@ export default function AdvancedChatPage() {
                       ) : (
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-primary truncate">
-                            {chat.title}
+                            {session.title || `Session ${session.id}`}
                           </p>
                           <p className="text-xs text-secondary truncate">
-                            {chat.messages[chat.messages.length - 1]?.content || "No messages"}
+                            {session.messages && session.messages.length > 0 
+                              ? session.messages[session.messages.length - 1]?.query 
+                              : "No messages"}
                           </p>
-                          <p className="text-xs text-low">
-                            {formatTime(chat.updatedAt)}
-                          </p>
-                          {chat.unit && (
-                            <p className="text-xs text-brand-weak truncate mt-1">
-                              {chat.unit}
+                          {session.last_updated && (
+                            <p className="text-xs text-low">
+                              {formatTime(session.last_updated)}
                             </p>
                           )}
+                          <p className="text-xs text-brand-weak truncate mt-1">
+                            {session.unit_id}
+                          </p>
                         </div>
                       )}
                       
@@ -413,22 +404,22 @@ export default function AdvancedChatPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setEditingChatId(chat.id);
-                            setEditingTitle(chat.title);
+                            setEditingSessionId(session.id);
+                            setEditingTitle(session.title || `Session ${session.id}`);
                           }}
                           className="p-1 hover-surface rounded transition-colors"
                           title="Edit title"
                         >
                           <Edit3 className="w-3 h-3 text-secondary" />
                         </button>
-                        {subjectChats.length > 1 && (
+                        {sessions.length > 1 && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteChat(chat.id);
+                              handleDeleteSession(session.id);
                             }}
                             className="p-1 hover-danger rounded transition-colors"
-                            title="Delete chat"
+                            title="Delete session"
                           >
                             <Trash2 className="w-3 h-3 text-danger" />
                           </button>
@@ -474,90 +465,101 @@ export default function AdvancedChatPage() {
 
         {/* Messages Container */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-chat">
-          {currentChat?.messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex items-start space-x-3 ${
-                message.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            > 
-              <div
-                className={`px-4 py-2 rounded-lg ${
-                  message.sender === "user"
-                    ? "bg-accent text-inverse max-w-xs lg:max-w-md "
-                    : ""
-                }`}
-              >
-                  <Markdown >
-                  {message.content}
-                  </Markdown>
-                <p
-                  className={`text-xs mt-1 ${
-                    message.sender === "user"
-                      ? "text-brand-weak"
-                      : "text-secondary"
-                  }`}
-                >
-                  {formatTime(message.timestamp)}
+          {currentMessages.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <Bot className="w-12 h-12 text-secondary mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-primary mb-2">
+                  Welcome to {activeSubject.name}
+                </h3>
+                <p className="text-secondary">
+                  Ask me anything about {selectedUnit}. I'm here to help you learn!
                 </p>
               </div>
-
-              {message.sender === "user" && (
-                <div className="flex-shrink-0 w-8 h-8 bg-success rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-inverse" />
-                </div>
-              )}
             </div>
-          ))}
+          ) : (
+            currentMessages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex items-start space-x-3 ${
+                  message.sender === "user" ? "justify-end" : "justify-start"
+                }`}
+              > 
+                {message.sender === "ai" && (
+                  <div className="flex-shrink-0">
+                    <Bot className="w-8 h-8 p-1 bg-surface border border-default rounded-full text-secondary" />
+                  </div>
+                )}
+                
+                <div
+                  className={`px-4 py-2 rounded-lg ${
+                    message.sender === "user"
+                      ? "bg-accent text-inverse max-w-xs lg:max-w-md"
+                      : "bg-surface border border-default max-w-3xl"
+                  }`}
+                >
+                  <Markdown>
+                    {message.content}
+                  </Markdown>
+                  <p
+                    className={`text-xs mt-1 ${
+                      message.sender === "user"
+                        ? "text-brand-weak"
+                        : "text-secondary"
+                    }`}
+                  >
+                    {formatTime(new Date().toISOString())}
+                  </p>
+                </div>
 
-          {/* Loading indicator */}
-          {isLoading && (
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-inverse" />
+                {message.sender === "user" && (
+                  <div className="flex-shrink-0">
+                    <User className="w-8 h-8 p-1 bg-accent text-inverse rounded-full" />
+                  </div>
+                )}
               </div>
-              <div className="bg-surface text-primary px-4 py-2 rounded-lg shadow-sm border border-default">
-                <div className="flex space-x-2">
-                  <div className="w-2 h-2 bg-loader-dot rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-loader-dot rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-loader-dot rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            ))
+          )}
+          
+          {isLoading && (
+            <div className="flex items-start space-x-3 justify-start">
+              <div className="flex-shrink-0">
+                <Bot className="w-8 h-8 p-1 bg-surface border border-default rounded-full text-secondary animate-pulse" />
+              </div>
+              <div className="px-4 py-2 rounded-lg bg-surface border border-default">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-secondary rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                 </div>
               </div>
             </div>
           )}
-
+          
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
         <div className="bg-header border-t border-default p-4">
-          <div className="mb-2">
-            <div className="flex items-center space-x-2 text-xs text-secondary">
-              <span>📚 {activeSubject.name}</span>
-              <span>•</span>
-              <span>📖 {selectedUnit}</span>
+          <div className="flex space-x-3">
+            <div className="flex-1">
+              <textarea
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={`Ask about ${selectedUnit}...`}
+                className="w-full form-input rounded-lg resize-none"
+                rows={1}
+                disabled={isLoading || !currentSession}
+              />
             </div>
-          </div>
-          <div className="flex space-x-2">
-            <textarea
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={`Ask me anything about ${activeSubject.name}...`}
-              className="flex-1 resize-none border border-default rounded-lg px-3 py-2 form-input max-h-32"
-              rows={1}
-              disabled={isLoading}
-            />
             <button
               onClick={handleSendMessage}
-              disabled={!inputMessage.trim() || isLoading}
-              className="btn-primary rounded-lg px-4 py-2 transition-colors flex items-center justify-center"
+              disabled={!inputMessage.trim() || isLoading || !currentSession}
+              className="btn-primary p-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Send className="w-5 h-5" />
             </button>
-          </div>
-          <div className="text-xs text-secondary mt-2">
-            Press Enter to send, Shift+Enter for new line
           </div>
         </div>
       </div>
